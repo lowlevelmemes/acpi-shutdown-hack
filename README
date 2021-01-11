@@ -1,0 +1,10 @@
+facp_shutdown_hack
+==================
+
+This is a *hack* to support shutdown in OSes where full support for ACPI is
+lacking.
+
+To use the hack, integrate the facp_shutdown_hack.{c,h} in your codebase.
+
+The interface to shutdown is extremely simple and self documenting.
+See facp_shutdown_hack.h.
