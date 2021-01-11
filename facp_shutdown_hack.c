@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include <facp_shutdown_hack.h>
 
-int memcmp(const void *s1, const void *s2, size_t n);
-
 struct facp {
     char     signature[4];
     uint32_t length;
