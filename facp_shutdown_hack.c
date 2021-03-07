@@ -96,12 +96,15 @@ s5_found:
     uint16_t SLP_TYPb = value << 10;
     s5_addr += size;
 
-    outb(facp->SMI_CMD, facp->ACPI_ENABLE);
-    for (int i = 0; i < 100; i++)
-        inb(0x80);
+    if(facp->SMI_CMD != 0 && facp->ACPI_ENABLE != 0) { // This PC has SMM and we need to enable ACPI mode first
+        outb(facp->SMI_CMD, facp->ACPI_ENABLE);
+        for (int i = 0; i < 100; i++)
+            inb(0x80);
     
-    while (!inw(facp->PM1a_CNT_BLK) & (1 << 0))
-        ;
+        while (!inw(facp->PM1a_CNT_BLK) & (1 << 0))
+            ;
+    }
+    
 
     outw(facp->PM1a_CNT_BLK, SLP_TYPa | (1 << 13));
     if (facp->PM1b_CNT_BLK)
