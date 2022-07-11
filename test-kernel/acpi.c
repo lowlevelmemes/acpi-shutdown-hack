@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <builtins.h>
 #include <acpi.h>
+#include <limine.h>
 
 struct rsdp {
     char signature[8];
@@ -25,9 +26,15 @@ struct rsdt {
 static bool use_xsdt;
 static struct rsdt *rsdt;
 
+static volatile struct limine_rsdp_request rsdp_req = {
+    LIMINE_RSDP_REQUEST, 0, NULL
+};
+
 /* This function should look for all the ACPI tables and index them for
    later use */
-void acpi_init(struct rsdp *rsdp) {
+void acpi_init(void) {
+    struct rsdp *rsdp = rsdp_req.response->address;
+
     if (rsdp->rev >= 2 && rsdp->xsdt_addr) {
         use_xsdt = true;
         rsdt = (struct rsdt *)((uintptr_t)rsdp->xsdt_addr);

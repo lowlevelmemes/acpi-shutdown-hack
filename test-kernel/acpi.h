@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct rsdp;
-
 struct sdt {
     char signature[4];
     uint32_t length;
@@ -17,5 +15,5 @@ struct sdt {
     uint32_t creator_rev;
 } __attribute__((packed));
 
-void acpi_init(struct rsdp *rsdp);
+void acpi_init(void);
 void *acpi_find_sdt(const char *signature, size_t index);
