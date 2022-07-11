@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <acpi.h>
-#include <facp_shutdown_hack.h>
+#include <acpi_shutdown_hack.h>
 #include <limine.h>
 
 static uint8_t inb(uint16_t port) {
@@ -54,7 +54,7 @@ void _start(void) {
     for (size_t i = 0; i < 10000000; i++)
         inb(0x80);
 
-    facp_shutdown_hack(hhdm_req.response->offset,
+    acpi_shutdown_hack(hhdm_req.response->offset,
                        acpi_find_sdt, inb, inw, outb, outw);
 
     for (;;) {

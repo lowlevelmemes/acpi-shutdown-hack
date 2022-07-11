@@ -1,6 +1,6 @@
 #include <stddef.h>
 #include <stdint.h>
-#include <facp_shutdown_hack.h>
+#include <acpi_shutdown_hack.h>
 
 struct facp {
     char     signature[4];
@@ -47,7 +47,7 @@ static inline uint8_t parse_integer(uint8_t* s5_addr, uint64_t* value) {
     }
 }
 
-int facp_shutdown_hack(
+int acpi_shutdown_hack(
         uintptr_t direct_map_base,
         void     *(*find_sdt)(const char *signature, size_t index),
         uint8_t   (*inb)(uint16_t port),

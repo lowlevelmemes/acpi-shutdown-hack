@@ -1,10 +1,10 @@
-#ifndef _FACP_SHUTDOWN_HACK_H_
-#define _FACP_SHUTDOWN_HACK_H_
+#ifndef _ACPI_SHUTDOWN_HACK_H
+#define _ACPI_SHUTDOWN_HACK_H
 
 #include <stddef.h>
 #include <stdint.h>
 
-int facp_shutdown_hack(
+int acpi_shutdown_hack(
         uintptr_t direct_map_base,
         void   *(*find_sdt)(const char *signature, size_t index),
         uint8_t (*inb)(uint16_t port),
