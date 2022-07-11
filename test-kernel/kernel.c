@@ -2,6 +2,7 @@
 #include <stddef.h>
 #include <acpi.h>
 #include <facp_shutdown_hack.h>
+#include <limine.h>
 
 static uint8_t inb(uint16_t port) {
     uint8_t ret;
@@ -43,13 +44,18 @@ static void outw(uint16_t port, uint16_t value) {
     );
 }
 
+static volatile struct limine_hhdm_request hhdm_req = {
+    LIMINE_HHDM_REQUEST, 0, NULL
+};
+
 void _start(void) {
     acpi_init();
 
     for (size_t i = 0; i < 10000000; i++)
         inb(0x80);
 
-    facp_shutdown_hack(0, acpi_find_sdt, inb, inw, outb, outw);
+    facp_shutdown_hack(hhdm_req.response->offset,
+                       acpi_find_sdt, inb, inw, outb, outw);
 
     for (;;) {
         asm ("hlt");
