@@ -1,3 +1,4 @@
+/ovmf*
 *.elf
 *.hdd
 *.o

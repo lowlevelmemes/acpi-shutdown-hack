@@ -1,11 +1,11 @@
 .PHONY: all
 all: disk.hdd
 
-.PHONY: run-hdd
+.PHONY: run
 run: disk.hdd
 	qemu-system-x86_64 -M q35 -m 2G -hda disk.hdd
 
-.PHONY: run-hdd-uefi
+.PHONY: run-uefi
 run-uefi: ovmf-x64 disk.hdd
 	qemu-system-x86_64 -M q35 -m 2G -bios ovmf-x64/OVMF.fd -hda disk.hdd
 
