@@ -45,9 +45,9 @@ SECTIONS
         *(.bss .bss.*)
     } :data
 
-    /* Discard unused sections from object files that may cause issues. */
+    /* Discard .note.* and .eh_frame since they may cause issues on some hosts. */
     /DISCARD/ : {
-        *.o(*)
-        *.a:*(*)
+        *(.eh_frame)
+        *(.note .note.*)
     }
 }
