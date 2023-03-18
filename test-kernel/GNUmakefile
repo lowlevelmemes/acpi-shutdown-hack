@@ -1,8 +1,11 @@
+# Nuke built-in rules and variables.
+override MAKEFLAGS += -rR
+
 # This is the name that our final kernel executable will have.
 # Change as needed.
 override KERNEL := kernel.elf
 
-# Convenience macro to reliably declare overridable command variables.
+# Convenience macro to reliably declare user overridable variables.
 define DEFAULT_VAR =
     ifeq ($(origin $1),default)
         override $(1) := $(2)
@@ -21,16 +24,16 @@ $(eval $(call DEFAULT_VAR,CC,cc))
 $(eval $(call DEFAULT_VAR,LD,ld))
 
 # User controllable CFLAGS.
-CFLAGS ?= -g -O2 -pipe -Wall -Wextra
+$(eval $(call DEFAULT_VAR,CFLAGS,-g -O2 -pipe -Wall -Wextra))
 
 # User controllable preprocessor flags. We set none by default.
-CPPFLAGS ?=
+$(eval $(call DEFAULT_VAR,CPPFLAGS,))
 
 # User controllable nasm flags.
-NASMFLAGS ?= -F dwarf -g
+$(eval $(call DEFAULT_VAR,NASMFLAGS,-F dwarf -g))
 
 # User controllable linker flags. We set none by default.
-LDFLAGS ?=
+$(eval $(call DEFAULT_VAR,LDFLAGS,))
 
 # Internal C flags that should not be changed by the user.
 override CFLAGS +=       \
@@ -49,10 +52,12 @@ override CFLAGS +=       \
     -mno-sse             \
     -mno-sse2            \
     -mno-red-zone        \
-    -mcmodel=kernel      \
-    -masm=intel          \
-    -MMD                 \
-    -I.
+    -mcmodel=kernel
+
+override CPPFLAGS := \
+    -I.              \
+    $(CPPFLAGS)      \
+    -MMD
 
 # Internal linker flags that should not be changed by the user.
 override LDFLAGS +=         \
@@ -62,7 +67,7 @@ override LDFLAGS +=         \
     -z max-page-size=0x1000 \
     -T linker.ld
 
-# Check if the linker supports -no-pie and enable it if it does
+# Check if the linker supports -no-pie and enable it if it does.
 ifeq ($(shell $(LD) --help 2>&1 | grep 'no-pie' >/dev/null 2>&1; echo $$?),0)
     override LDFLAGS += -no-pie
 endif
@@ -94,11 +99,11 @@ $(KERNEL): $(OBJ)
 
 # Compilation rules for *.c files.
 %.o: %.c limine.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.S files.
 %.o: %.S limine.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.asm (nasm) files.
 %.o: %.asm

@@ -7,7 +7,7 @@
 static uint8_t inb(uint16_t port) {
     uint8_t ret;
     asm volatile (
-        "in %0, %1\n\t"
+        "inb %1, %0\n\t"
         : "=a"(ret)
         : "d"(port)
         : "memory"
@@ -18,7 +18,7 @@ static uint8_t inb(uint16_t port) {
 static uint16_t inw(uint16_t port) {
     uint16_t ret;
     asm volatile (
-        "in %0, %1\n\t"
+        "inw %1, %0\n\t"
         : "=a"(ret)
         : "d"(port)
         : "memory"
@@ -28,7 +28,7 @@ static uint16_t inw(uint16_t port) {
 
 static void outb(uint16_t port, uint8_t value) {
     asm volatile (
-        "out %0, %1\n\t"
+        "outb %1, %0\n\t"
         :
         : "d"(port), "a"(value)
         : "memory"
@@ -37,7 +37,7 @@ static void outb(uint16_t port, uint8_t value) {
 
 static void outw(uint16_t port, uint16_t value) {
     asm volatile (
-        "out %0, %1\n\t"
+        "outw %1, %0\n\t"
         :
         : "d"(port), "a"(value)
         : "memory"

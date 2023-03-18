@@ -1,34 +1,61 @@
+# Nuke built-in rules and variables.
+override MAKEFLAGS += -rR
+
 .PHONY: all
-all: disk.hdd
+all: barebones.iso
+
+.PHONY: all-hdd
+all-hdd: barebones.hdd
 
 .PHONY: run
-run: disk.hdd
-	qemu-system-x86_64 -M q35 -m 2G -hda disk.hdd
+run: barebones.iso
+	qemu-system-x86_64 -M q35 -m 2G -cdrom barebones.iso -boot d
 
 .PHONY: run-uefi
-run-uefi: ovmf-x64 disk.hdd
-	qemu-system-x86_64 -M q35 -m 2G -bios ovmf-x64/OVMF.fd -hda disk.hdd
+run-uefi: ovmf-x64 barebones.iso
+	qemu-system-x86_64 -M q35 -m 2G -bios ovmf-x64/OVMF.fd -cdrom barebones.iso -boot d
+
+.PHONY: run-hdd
+run-hdd: barebones.hdd
+	qemu-system-x86_64 -M q35 -m 2G -hda barebones.hdd
+
+.PHONY: run-hdd-uefi
+run-hdd-uefi: ovmf-x64 barebones.hdd
+	qemu-system-x86_64 -M q35 -m 2G -bios ovmf-x64/OVMF.fd -hda barebones.hdd
 
 ovmf-x64:
 	mkdir -p ovmf-x64
 	cd ovmf-x64 && curl -o OVMF-X64.zip https://efi.akeo.ie/OVMF/OVMF-X64.zip && 7z x OVMF-X64.zip
 
 limine:
-	git clone https://github.com/limine-bootloader/limine.git --branch=v3.0-branch-binary --depth=1
-	make -C limine
+	git clone https://github.com/limine-bootloader/limine.git --branch=v4.x-branch-binary --depth=1
+	$(MAKE) -C limine
 
-.PHONY: test-kernel
-test-kernel:
+.PHONY: kernel
+kernel:
 	$(MAKE) -C test-kernel
 
-disk.hdd: limine test-kernel
-	rm -f disk.hdd
-	dd if=/dev/zero bs=1M count=0 seek=64 of=disk.hdd
-	parted -s disk.hdd mklabel gpt
-	parted -s disk.hdd mkpart ESP fat32 2048s 100%
-	parted -s disk.hdd set 1 esp on
-	limine/limine-deploy disk.hdd
-	sudo losetup -Pf --show disk.hdd >loopback_dev
+barebones.iso: limine kernel
+	rm -rf iso_root
+	mkdir -p iso_root
+	cp test-kernel/kernel.elf \
+		limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-cd-efi.bin iso_root/
+	xorriso -as mkisofs -b limine-cd.bin \
+		-no-emul-boot -boot-load-size 4 -boot-info-table \
+		--efi-boot limine-cd-efi.bin \
+		-efi-boot-part --efi-boot-image --protective-msdos-label \
+		iso_root -o barebones.iso
+	limine/limine-deploy barebones.iso
+	rm -rf iso_root
+
+barebones.hdd: limine kernel
+	rm -f barebones.hdd
+	dd if=/dev/zero bs=1M count=0 seek=64 of=barebones.hdd
+	parted -s barebones.hdd mklabel gpt
+	parted -s barebones.hdd mkpart ESP fat32 2048s 100%
+	parted -s barebones.hdd set 1 esp on
+	limine/limine-deploy barebones.hdd
+	sudo losetup -Pf --show barebones.hdd >loopback_dev
 	sudo mkfs.fat -F 32 `cat loopback_dev`p1
 	mkdir -p img_mount
 	sudo mount `cat loopback_dev`p1 img_mount
@@ -42,7 +69,7 @@ disk.hdd: limine test-kernel
 
 .PHONY: clean
 clean:
-	rm -rf iso_root disk.hdd
+	rm -rf iso_root barebones.iso barebones.hdd
 	$(MAKE) -C test-kernel clean
 
 .PHONY: distclean
