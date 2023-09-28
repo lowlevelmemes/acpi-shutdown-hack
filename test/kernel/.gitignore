@@ -1,4 +1,3 @@
-/limine.h
-*.elf
-*.o
-*.d
+/src/limine.h
+/bin
+/obj
