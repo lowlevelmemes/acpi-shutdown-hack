@@ -84,9 +84,9 @@ override NASMFLAGS += \
 
 # Use "find" to glob all *.c, *.S, and *.asm files in the tree and obtain the
 # object and header dependency file names.
-override CFILES := $(shell cd src && find -L . -type f -name '*.c')
-override ASFILES := $(shell cd src && find -L . -type f -name '*.S')
-override NASMFILES := $(shell cd src && find -L . -type f -name '*.asm')
+override CFILES := $(shell cd src && find -L * -type f -name '*.c')
+override ASFILES := $(shell cd src && find -L * -type f -name '*.S')
+override NASMFILES := $(shell cd src && find -L * -type f -name '*.asm')
 override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
 override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 
@@ -111,7 +111,7 @@ obj/%.c.o: src/%.c GNUmakefile src/limine.h
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.S files.
-obj/%.S.o: src/%.S GNUmakefile src/limine.h
+obj/%.S.o: src/%.S GNUmakefile
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
