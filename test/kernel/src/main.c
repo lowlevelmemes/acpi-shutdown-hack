@@ -1,8 +1,11 @@
 #include <stdint.h>
 #include <stddef.h>
+#include <stdbool.h>
 #include <acpi.h>
 #include <acpi_shutdown_hack.h>
 #include <limine.h>
+
+LIMINE_BASE_REVISION(1)
 
 static uint8_t inb(uint16_t port) {
     uint8_t ret;
@@ -44,11 +47,17 @@ static void outw(uint16_t port, uint16_t value) {
     );
 }
 
-static volatile struct limine_hhdm_request hhdm_req = {
+struct limine_hhdm_request hhdm_req = {
     LIMINE_HHDM_REQUEST, 0, NULL
 };
 
 void _start(void) {
+    if (LIMINE_BASE_REVISION_SUPPORTED == false) {
+        for (;;) {
+            asm ("hlt");
+        }
+    }
+
     acpi_init();
 
     for (size_t i = 0; i < 10000000; i++)

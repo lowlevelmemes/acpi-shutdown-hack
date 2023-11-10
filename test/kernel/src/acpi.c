@@ -26,9 +26,11 @@ struct rsdt {
 static bool use_xsdt;
 static struct rsdt *rsdt;
 
-static volatile struct limine_rsdp_request rsdp_req = {
+struct limine_rsdp_request rsdp_req = {
     LIMINE_RSDP_REQUEST, 0, NULL
 };
+
+extern struct limine_hhdm_request hhdm_req;
 
 /* This function should look for all the ACPI tables and index them for
    later use */
@@ -37,10 +39,10 @@ void acpi_init(void) {
 
     if (rsdp->rev >= 2 && rsdp->xsdt_addr) {
         use_xsdt = true;
-        rsdt = (struct rsdt *)((uintptr_t)rsdp->xsdt_addr);
+        rsdt = (struct rsdt *)((uintptr_t)rsdp->xsdt_addr + hhdm_req.response->offset);
     } else {
         use_xsdt = false;
-        rsdt = (struct rsdt *)((uintptr_t)rsdp->rsdt_addr);
+        rsdt = (struct rsdt *)((uintptr_t)rsdp->rsdt_addr + hhdm_req.response->offset);
     }
 }
 
@@ -51,9 +53,9 @@ void *acpi_find_sdt(const char *signature, size_t index) {
     for (size_t i = 0; i < rsdt->sdt.length - sizeof(struct sdt); i++) {
         struct sdt *ptr;
         if (use_xsdt)
-            ptr = (struct sdt *)(uintptr_t)((uint64_t *)rsdt->ptrs_start)[i];
+            ptr = (struct sdt *)((uintptr_t)((uint64_t *)rsdt->ptrs_start)[i] + hhdm_req.response->offset);
         else
-            ptr = (struct sdt *)(uintptr_t)((uint32_t *)rsdt->ptrs_start)[i];
+            ptr = (struct sdt *)((uintptr_t)((uint32_t *)rsdt->ptrs_start)[i] + hhdm_req.response->offset);
 
         if (!strncmp(ptr->signature, signature, 4) && cnt++ == index) {
             return (void *)ptr;
